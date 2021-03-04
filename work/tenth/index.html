@@ -42,21 +42,57 @@
       // $.ajax({}) 外部ファイルやURLに対してデータをリクエストすることができます。
       // 以下は今回使う$.ajaxの基本的な形です。
       //
-      // $.ajax({
-      //   url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-      //   type: 'GET',
-      //   datatype: 'json',
-      //   data: {
+      
+      $(function(){
+        $('.search__btn').on('click',function(){
+          var search = $('.search__btn').val();
+          $('ul').empty();
+          console.log(search);
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',
+            data: {
       //     // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
-      //     applicationId: appId, (今回はこの変数をIDとして使用します) ※メンターから別途渡されるファイルを読み込んでください。
-      //     booksGenreId: '001'
-      //   },
-      // }).done(function(data) {
-      //   // この中にデータ取得後の動きを記述していきます。
-      //   console.log(data);
-      // });
-      //
-      //
+           applicationId: appId, //(今回はこの変数をIDとして使用します) ※メンターから別途渡されるファイルを読み込んでください。
+           booksGenreId: '001',
+           keyword: 'search',
+           hits: 20,
+           page: 1,
+         },
+       }).done(function(data) {
+        console.log(data.Items);
+        if (data.count > 0){
+            $.each(data.Items, function(i,item){
+              var temp = '<li class="lists__item">'+
+              '<div class="lists__item__inner">'+
+              '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">'+
+              '<img src="'+ item.Item.mediumImageUrl +'" class="lists__item__img" alt="本の画像">'+
+              '<p class="lists__item__detail">作品名：' + data.Items[i].Item.title + '</p>'+
+              '<p class="lists__item__detail">作者　：' + data.Items[i].Item.author + '</p>'+
+              '<p class="lists__item__detail">出版社：' + data.Items[i].Item.publisherName + '</p>'+
+              '</a>'+'</div>'+'</li>';
+              $('ul').prepend(temp);
+            });
+          } else if (data.count === 0) {
+            $('ul').before('<div class="coment"></div>')
+            coment = $('.coment');
+            coment.html('<p class="message">検索結果が見つかりませんでした。</p>');
+          }
+      //   // この中にデータ取得後の動きを記述していきます
+       })
+       .fail(function(data){
+        $('ul').before('<div class="alert"></div>')
+        alert = $('.alert');
+        alert.html('<p class="message">リクエスト過多です。しばらく時間を置いてからお試しください。</p>');
+         console.log(data);
+       })
+      });
+      });
+
+      
+      
+
       // $.ajaxによってデータが取得できたら、必要なデータ(作品名とか作者名とか)を取得します。
       // 取得できたらHTMLに<ul class='lists'></ul>を用意しているので、下のテンプレに沿ってデータを入れ込みましょう。
       // <li class="lists__item">
